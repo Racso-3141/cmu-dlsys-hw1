@@ -122,16 +122,6 @@ def nn_epoch(X, y, W1, W2, lr=0.1, batch=100):
     for batch_start in range(0, num_examples, batch):
         batch_size = min(batch, num_examples - batch_start)
         X_batch = ndl.Tensor(X[batch_start: batch_start + batch_size])
-        # Z1 = np.maximum(X_batch@W1, 0)
-
-        # y_batch = y[batch_start: batch_start + batch_size]
-        # I_y = np.eye(num_classes)[y_batch]
-        # G2 = normalize_exp(Z1@W2) - I_y
-        
-        # G1 = (Z1 > 0).astype(np.uint8) * (G2@np.transpose(W2))
-
-        # W1 -= lr / batch_size * np.transpose(X_batch)@G1
-        # W2 -= lr / batch_size * np.transpose(Z1)@G2
         Z = ndl.ops.relu(X_batch@W1)@W2
         y_batch = y[batch_start: batch_start + batch_size]
         y_batch_one_hot = np.zeros((y_batch.shape[0], Z.shape[-1]))
@@ -140,8 +130,8 @@ def nn_epoch(X, y, W1, W2, lr=0.1, batch=100):
         loss = softmax_loss(Z, y_)
         loss.backward()
         
-        W1 -= lr * W1.grad
-        W2 -= lr * W2.grad
+        W1.data = W1.data - lr * W1.grad.data
+        W2.data = W2.data - lr * W2.grad.data
     return W1, W2
     ### END YOUR SOLUTION
 
